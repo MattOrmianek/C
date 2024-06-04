@@ -9,18 +9,27 @@ typedef struct {
 // Function to initialize the array
 void initArray(MyArray *arr, int size) {
     arr->array = (int *)malloc(size * sizeof(int));
+    if (arr->array == NULL) {
+        fprintf(stderr, "Memory allocation failed\n");
+        exit(1);
+    }
     arr->size = size;
 }
 
 // Function to free the array memory
 void freeArray(MyArray *arr) {
     free(arr->array);
+    arr->array = NULL;  // Avoid dangling pointer
+    arr->size = 0;
+    printf("\n");
 }
 
 // Function to set an element in the array
 void setElement(MyArray *arr, int index, int value) {
     if (index >= 0 && index < arr->size) {
         arr->array[index] = value;
+    } else {
+        fprintf(stderr, "Index out of bounds\n");
     }
 }
 
@@ -29,13 +38,14 @@ int getElement(MyArray *arr, int index) {
     if (index >= 0 && index < arr->size) {
         return arr->array[index];
     }
+    fprintf(stderr, "Index out of bounds\n");
     return -1; // or handle error
 }
 
 // Function to print array elements and their memory addresses
 void printElements(MyArray *arr) {
     for (int i = 0; i < arr->size; i++) {
-        printf("(Address: %p) Element at index %d: %d \n", (void*)&arr->array[i], i, arr->array[i]);
+        printf("(Address: %p) Element at index %d: %d\n", (void*)&arr->array[i], i, arr->array[i]);
     }
 }
 
@@ -47,14 +57,12 @@ void printSize(MyArray *arr) {
 // Function to print individual bytes of the array elements
 void printBytes(MyArray *arr) {
     unsigned char *bytePtr = (unsigned char*)arr->array;
-    for (int i = 0; i < sizeof(int) * arr->size; i++) {
-        if (i % 4 == 0){
-            printf("Bytes: ");
+    for (int i = 0; i < arr->size; i++) {
+        printf("Element %d bytes: ", i);
+        for (int j = sizeof(int) - 1; j >= 0; j--) {
+            printf("%02x ", bytePtr[i * sizeof(int) + j]);
         }
-        printf(" %d: %02x ", i, bytePtr[i]);
-        if (i % 4 == 3){
-            printf("\n");
-        }
+        printf("\n");
     }
 }
 
@@ -69,13 +77,26 @@ int main() {
     printBytes(&numbers);
     freeArray(&numbers);
 
-    printf("\n");
+
+    initArray(&numbers, size_of_numbers);
     setElement(&numbers, 1, 1);
     printElements(&numbers);
     printSize(&numbers);
     printBytes(&numbers);
+    freeArray(&numbers);
 
 
+    MyArray numbers_but_with_more_values;
+    initArray(&numbers_but_with_more_values, 5);
+    setElement(&numbers_but_with_more_values, 0, 0);
+    setElement(&numbers_but_with_more_values, 1, 1);
+    setElement(&numbers_but_with_more_values, 2, 2);
+    setElement(&numbers_but_with_more_values, 3, 3);
+    setElement(&numbers_but_with_more_values, 4, 4);
+    printElements(&numbers_but_with_more_values);
+    printSize(&numbers_but_with_more_values);
+    printBytes(&numbers_but_with_more_values);
+    freeArray(&numbers_but_with_more_values);
 
     return 0;
 }
